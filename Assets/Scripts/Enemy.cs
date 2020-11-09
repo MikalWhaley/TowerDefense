@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Enemy : MonoBehaviour
 {
-  public Waypoints[] navPoints;
+  private Waypoints[] navPoints;
   private Transform target;
   private Vector3 direction;
   public float amplify = 1;
@@ -16,20 +17,28 @@ public class Enemy : MonoBehaviour
   public int cashPoints = 100;
   private HealthBar healthBar;
 
-  // Start is called before the first frame update
-  void Start()
+  public UnityEvent DeathEvent;
+
+
+    // Start is called before the first frame update
+    public void StartEnemy(Waypoints[] navigationalPath)
   {
+       
+
+        navPoints = navigationalPath;
     purse = GameObject.FindGameObjectWithTag("Purse").GetComponent<Purse>();
     healthBar = GetComponentInChildren<HealthBar>();
     startingHealth = currentHealth;
     //Place our enemy at the start point
     transform.position = navPoints[index].transform.position;
     NextWaypoint();
+
+
     
-    //Move towards the next waypoint
-    //Retarget to the following waypoint when we reach our current waypoint
-    //Repeat through all of the waypoints until you reach the end
-  }
+        //Move towards the next waypoint
+        //Retarget to the following waypoint when we reach our current waypoint
+        //Repeat through all of the waypoints until you reach the end
+    }
 
   // Update is called once per frame
   void Update()
@@ -65,13 +74,19 @@ public class Enemy : MonoBehaviour
     currentHealth -= amountDamage;
     if (currentHealth < 0)
     {
-      purse.AddCash(cashPoints);
-      Destroy(this.gameObject);
-    }
+      purse.AddCash(cashPoints); //add cash to purse
+      DeathEvent.Invoke();    ///notify towers that I am killed
+      Destroy(this.gameObject); //Get rid of object
+      purse.removeEnemy();
+
+
+        }
     else
     {
       healthBar.Damage(currentHealth, startingHealth);
     }
   }
+
+
 
 }
